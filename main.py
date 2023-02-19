@@ -5,18 +5,15 @@ from google.cloud import asset_v1
 
 PROJECT_ID=os.environ['GCP_PROJECT']
 
-# https://cloud.google.com/python/docs/reference/cloudasset/latest/google.cloud.asset_v1.services.asset_service.AssetServiceClient#google_cloud_asset_v1_services_asset_service_AssetServiceClient_search_all_resources
-# SUPPORTED ASSET TYPES: https://cloud.google.com/asset-inventory/docs/supported-asset-types
 
-def search_all_ips():
+def find_gcp_ips():
   df = pd.DataFrame(columns=['ASSET TYPE', 'DISPLAY NAME', 'LOCATION', 'IP ADDRESS(ES)']) 
-
 
   # create client
   client = asset_v1.AssetServiceClient()
 
   #-------------------------------------------------
-  # IP + FORWARDING RULES (public)
+  # RESERVED IPs + FORWARDING RULES 
   #-------------------------------------------------
   request = asset_v1.SearchAllResourcesRequest(
     scope="projects/" + PROJECT_ID,
@@ -39,6 +36,9 @@ def search_all_ips():
 
   #-------------------------------------------------
   # COMPUTE ENGINES (private + public)
+  # - compute engines
+  # - gke nodes
+  # - dataproc master & workers
   #-------------------------------------------------
   request = asset_v1.SearchAllResourcesRequest(
     scope="projects/" + PROJECT_ID,
@@ -53,6 +53,36 @@ def search_all_ips():
       df.loc[len(df)] = [response.asset_type, response.display_name, response.location, int_ext_ips]
     except KeyError:
       df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['internalIPs'][0]]
+
+
+  #-------------------------------------------------
+  # CLOUD DATA FUSION
+  # instances are in a tenant project (external)
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "datafusion.googleapis.com/Instance",
+    ],
+  )
+
+#  for response in client.search_all_resources(request=request):
+#    print(response)
+
+
+  #-------------------------------------------------
+  # CLOUD SPANNER
+  # does not show any assets (maybe becuase I provisioned a fractional instance?)
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "spanner.googleapis.com/Instance",
+    ],
+  )
+
+#  for response in client.search_all_resources(request=request):
+#    print(response)
 
 
   #-------------------------------------------------
@@ -71,6 +101,35 @@ def search_all_ips():
 
 
   #-------------------------------------------------
+  # CLOUD TPU
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "tpu.googleapis.com/Node",
+    ],
+  )
+
+  for response in client.search_all_resources(request=request):
+    df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['networkEndpoint'][0]['ipAddress']]
+
+
+  #-------------------------------------------------
+  # DATAPROC
+  # only shows cluster status, nodes show up in compute engines
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "dataproc.googleapis.com/Cluster",
+    ],
+  )
+
+#  for response in client.search_all_resources(request=request):
+#      print(response)
+
+
+  #-------------------------------------------------
   # FILESTORE
   #-------------------------------------------------
   request = asset_v1.SearchAllResourcesRequest(
@@ -81,7 +140,6 @@ def search_all_ips():
   )
 
   for response in client.search_all_resources(request=request):
-    #print(response)
     df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['networks'][0]['ipAddresses'][0]]
 
 
@@ -114,6 +172,21 @@ def search_all_ips():
 #      print(response)
 
 
+  #-------------------------------------------------
+  # SERVERLESS VPC ACCESS
+  # does not show IPs of connector instances
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "vpcaccess.googleapis.com/Connector",
+    ],
+  )
+
+#  for response in client.search_all_resources(request=request):
+#    print(response)
+
+
 
   #-------------------------------------------------
   # OUTPUT
@@ -122,6 +195,5 @@ def search_all_ips():
 
 
 
-
-# TEST
-search_all_ips()
+if __name__ == "__main__":
+  find_gcp_ips()
