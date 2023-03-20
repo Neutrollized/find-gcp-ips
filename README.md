@@ -1,5 +1,5 @@
 # find-gcp-ips
-Attempts to find all private and public/ephemeral IPs within a GCP project.  I started working ont his because of [this issue](https://issuetracker.google.com/issues/11917861).  It seems kind of silly that Google wouldn't make a command that can get all this info.  I have worked with [Cloud Asset API](https://cloud.google.com/asset-inventory/docs/apis) before so I'd try and build a tool with it that can query all this information for the user in a nice tabular format.
+Attempts to find all private and public/ephemeral IPs within a GCP project.  I started working ont his because of [this issue](https://issuetracker.google.com/issues/207842547).  It seems kind of silly that Google wouldn't make a command that can get all this info.  I have worked with [Cloud Asset API](https://cloud.google.com/asset-inventory/docs/apis) before so I'd try and build a tool with it that can query all this information for the user in a nice tabular format.
 
 - List of [supported asset types](https://cloud.google.com/asset-inventory/docs/supported-asset-types)
 
