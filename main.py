@@ -28,10 +28,24 @@ def find_gcp_ips():
 
   # handle response
   for response in page_result:
-    try: 
+    try:
       df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['IPAddress']]
     except KeyError:
       df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['address']]
+
+
+  #-------------------------------------------------
+  # ALLOYDB
+  #-------------------------------------------------
+  request = asset_v1.SearchAllResourcesRequest(
+    scope="projects/" + PROJECT_ID,
+    asset_types=[
+      "alloydb.googleapis.com/Instance",
+    ],
+  )
+
+#  for response in client.search_all_resources(request=request):
+#      print(response)
 
 
   #-------------------------------------------------
@@ -49,8 +63,8 @@ def find_gcp_ips():
 
   for response in client.search_all_resources(request=request):
     try: 
-      int_ext_ips = response.additional_attributes['internalIPs'][0] + ', ' + response.additional_attributes['externalIPs'][0]
-      df.loc[len(df)] = [response.asset_type, response.display_name, response.location, int_ext_ips]
+      gce_int_ext_ips = response.additional_attributes['internalIPs'][0] + ', ' + response.additional_attributes['externalIPs'][0]
+      df.loc[len(df)] = [response.asset_type, response.display_name, response.location, gce_int_ext_ips]
     except KeyError:
       df.loc[len(df)] = [response.asset_type, response.display_name, response.location, response.additional_attributes['internalIPs'][0]]
 
@@ -97,7 +111,7 @@ def find_gcp_ips():
   )
 
 #  for response in client.search_all_resources(request=request):
-#      print(response)
+#    print(response)
 
 
   #-------------------------------------------------
@@ -169,7 +183,7 @@ def find_gcp_ips():
   )
 
 #  for response in client.search_all_resources(request=request):
-#      print(response)
+#    print(response)
 
 
   #-------------------------------------------------
